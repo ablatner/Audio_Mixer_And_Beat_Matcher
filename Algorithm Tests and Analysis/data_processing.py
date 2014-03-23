@@ -60,7 +60,7 @@ for result in itertools.chain.from_iterable(results.values()):
 	print result
 
 rectangular_windowed = results[False]
-hanning_windowed = results[True]	
+hanning_windowed = results[True]
 
 interpolate(rectangular_windowed)
 interpolate(hanning_windowed)

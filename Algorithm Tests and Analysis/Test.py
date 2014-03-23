@@ -75,7 +75,7 @@ def run_test(LENGTH=None, DELAY=None, Hanning=True):
 		xfft = np.fft.rfft(data)
 		xfftmag = abs(xfft)
 		xfftfreqs = np.fft.rfftfreq(len(data), d=1.0/fs)*60 # in bpm
-		
+
 		# mag_filtered = [Frequency(round_to(xfftfreqs[i], RES_DESIRED), xfft[i], xfftmag[i]) for i in range(len(xfftfreqs)) if MIN_BPM<=xfftfreqs[i]<=MAX_BPM]
 		mag_filtered = [Frequency(xfftfreqs[i], xfft[i], xfftmag[i]) for i in range(0, int(MAX_BPM/RES_DESIRED)+1)]
 		chosen_freq = mag_filtered[int(KNOWN_BPM/RES_DESIRED)]
@@ -85,7 +85,7 @@ def run_test(LENGTH=None, DELAY=None, Hanning=True):
 		else:
 			desired = [DELAY, chosen_freq, modeled_phase, modeled_phase-chosen_freq.phase, (modeled_phase-chosen_freq.phase)*60/(130*2*pi)]
 		return desired
-		
+
 		# mag_threshold = np.percentile([freq_pair.mag for freq_pair in mag_filtered], MAG_PERCENTILE_THRESHOLD)
 
 		# peak_filtered = mag_filtered
@@ -108,8 +108,8 @@ def run_test(LENGTH=None, DELAY=None, Hanning=True):
 		# 				skip_buffer.clear()
 		# 				if curr_peak:
 		# 					peaks.append(curr_peak)
-		# 					curr_peak = []					
-		# 				track = False	
+		# 					curr_peak = []
+		# 				track = False
 		# 		if len(skip_buffer) == skip_buffer.maxlen:
 		# 			skip_buffer[0].mag = 0
 		# 		skip_buffer.append(freq_pair)
@@ -133,6 +133,9 @@ def run_test(LENGTH=None, DELAY=None, Hanning=True):
 		# print foo
 		## TODO: CORRECT PHASE FOR DELAY
 		# print('BPM of {0}+/-{1} with magnitude {2} and phase {3}.'.format(likely_bpm.freq, RES_DESIRED/2.0, likely_bpm.mag, np.angle(likely_bpm.amp)))
+
+print(run_test(60, 0, True))
+print(run_test(60, 10, True))
 
 results = defaultdict(list)
 for HANNING in [True]:
