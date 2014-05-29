@@ -3,12 +3,19 @@ import numpy as np
 from numpy import pi
 import matplotlib.pyplot as plt
 from collections import deque, defaultdict
-import itertools
 
-FILES = ['This Is What It Feels Like feat. Trevor Guthrie (W&W Remix).wav',
-         'This Is What It Feels Like feat. Trevor Guthrie (W&W Remix) (from mp3).wav',
-         'This Is What It Feels Like feat. Trevor Guthrie (W&W Remix) (from zamzar to mp3).wav'
+from os.path import dirname, join
+AUDIO_LOC = join(dirname(dirname(__file__)), 'Audio Files')
+FILES = [
+         'Armin_van_Buuren_-_Ping_Pong_Original_Mix.wav',
+         'This Is What It Feels Like feat. Trevor Guthrie (W&W Remix) (from zamzar to mp3).wav',
+         'Bangarang - feat. Sirah.wav',
+         'Breakn\' A Sweat.wav',
+         'Summit - feat. Ellie Goulding.wav',
+         'The Devil\'s Den.wav'
 ]
+for index, file_name in enumerate(FILES):
+    FILES[index] = join(AUDIO_LOC, file_name)
 
 class Frequency():
     def __init__(self, freq, amp, mag=None):
@@ -47,8 +54,8 @@ def round_to(val, precision):
 
 def get_beat_info(FILE, DELAY=10, RES_DESIRED=None):
     # User set parameters
-    MAX_BPM = 300
-    MIN_BPM = 10
+    MAX_BPM = 160
+    MIN_BPM = 80
     if RES_DESIRED == None:
         RES_DESIRED = float(1.0)
     LENGTH = 60.0/RES_DESIRED
@@ -64,15 +71,26 @@ def get_beat_info(FILE, DELAY=10, RES_DESIRED=None):
         return
     data = data[fs*DELAY:fs*(DELAY+LENGTH)]
     data = [channel0 for channel0, channel1 in data]
-    # data = [channel0/2.0+channel1/2.0 for channel0, channel1 in data]
+    plt.subplot(221)
+    plt.plot(data[:fs*10])
     data = np.absolute(data, dtype='int64')
     data *= np.hanning(len(data))
+
+    plt.subplot(222)
+    plt.plot(data[:fs*10])
 
     xfft = np.fft.rfft(data)
     xfftmag = abs(xfft)
     xfftfreqs = np.fft.rfftfreq(len(data), d=1.0/fs)*60 # in bpm
+    plt.subplot(223)
+    plt.plot(xfftfreqs, xfft)
 
     filtered = [Frequency(xfftfreqs[i], xfft[i], xfftmag[i]) for i in range(MIN_BPM, int(MAX_BPM/RES_DESIRED)+1)]
+    plt.subplot(224)
+    plt.plot([freq_pair.freq for freq_pair in filtered], [freq_pair.mag for freq_pair in filtered])
+
+    plt.show()
+
     mag_threshold = np.percentile([freq_pair.mag for freq_pair in filtered], MAG_PERCENTILE_THRESHOLD)
     peaks = []
     curr_peak = []
@@ -106,20 +124,18 @@ def get_beat_info(FILE, DELAY=10, RES_DESIRED=None):
         for skipped in skip_buffer:
             skipped.mag = 0
 
+    plt.subplot(111)
+    plt.plot([freq_pair.freq for freq_pair in filtered], [freq_pair.mag for freq_pair in filtered])
+    plt.show()
+
     fund_peak = peaks[0]
     likely_bpm_val = sum(freq_pair.freq*freq_pair.mag for freq_pair in fund_peak)/sum(freq_pair.mag for freq_pair in fund_peak)
     likely_bpm_val = round_to(likely_bpm_val, RES_DESIRED)
     likely_bpm = fund_peak[[freq_pair.freq for freq_pair in fund_peak].index(likely_bpm_val)]
     likely_bpm.model_actual_phase(DELAY)
-    return likely_bpm.modeled_actual_phase, likely_bpm.phase
+    return likely_bpm
     # print('BPM of {0}+/-{1} with magnitude {2} and phase {3}.'.format(likely_bpm.freq, RES_DESIRED/2.0, likely_bpm.mag, likely_bpm.modeled_actual_phase))
 
-# for FILE in FILES[0:]:
-#   for DELAY in [0,2,6,10,15]:
-#       print(FILE+': ' + str(get_beat_info(FILE, DELAY=DELAY)))
-
-beat_info = get_beat_info(FILES[0], DELAY=0, RES_DESIRED=1), get_beat_info(FILES[1], DELAY=5.67, RES_DESIRED=1), get_beat_info(FILES[2], DELAY=.12, RES_DESIRED=1)] '''
-(5.0482645342789088, -1.2349207729006779)
-(3.3078305760550322, -1.1846469185783763)
-(3.2262740739584226, -1.4232830533544716)
-'''
+for FILE in FILES[:]:
+  for DELAY in [0]:
+      print(FILE+': ' + str(get_beat_info(FILE, DELAY=DELAY)))

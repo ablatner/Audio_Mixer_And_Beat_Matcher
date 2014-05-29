@@ -1,0 +1,49 @@
+DESIGN DOC: mixer library
+
+
+Notes: All auto-mixed songs have same sampling rate.
+
+
+public interfaces:
+
+class SongMixer()
+	play()
+        Starts the audio stream by calling pyaudio.Stream.start_stream()
+	pause()
+        Pauses the audio stream by calling pyaudio.Stream.stop_stream()
+    stop()
+        Stops the audio stream by calling pyaudio.Stream.pause(), resetting the playlist to the beginning, and clearing the audio buffer. The audio buffer is modified LAST to better enable gapless playback.
+	next_song()
+        raise NotImplementedError
+	jump_to(position)
+        raise NotImplementedError
+    prev_song()
+        raise NotImplementedError
+    queue_playlist(playlist)
+        Sets playlist as the current playlist
+    queue_song(song)
+        Sets song as next song
+    start_playlist()
+        Queues playlist from playlist.song_list
+    shuffle_playlist()
+        Queues playlist from playlist.shuffled
+
+class Playlist(base_songs=None, base_playlist=None)
+    Initialized with songs in base_songs and base_playlist if either or both are present.
+
+    song_list
+        A list of all the Song objects in the Playlist, in the order the appear in the GUI
+    shuffled
+        Shuffled list of songs in song_list. Constructed using random.shuffle(copy.copy(song_list)), and subsequently shuffled with random.shuffle(shuffled).
+    shuffle()
+        Calls random.shuffle(shuffled) to shuffle the playlist.
+
+class Song():
+    name
+        Dictionary of a song's metadata that will be displayed while playing. Likely not more than artist and song name.
+    freq_data
+        A Frequency object containing the information necessary to sync two songs.
+    garbage_length
+        Time in milliseconds to skip into the song
+
+class AudioBuffer():

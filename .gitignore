@@ -1,3 +1,8 @@
+*.sublime-workspace
+*.sublime-project
+*.mp3
+*.wav
+*.mp4
 *.wav
 
 #################
@@ -215,7 +220,3 @@ pip-log.txt
 
 #Mr Developer
 .mr.developer.cfg
-
-*.mp3
-*.wav
-*.mp4
